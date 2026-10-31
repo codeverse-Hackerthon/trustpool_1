@@ -1,45 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bell, CheckCircle2, Clock, AlertTriangle, ShieldCheck } from 'lucide-react';
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  type: 'booking' | 'alert' | 'trust' | 'return';
-  read: boolean;
-}
+import { notificationService, AppNotification } from '../../services/notificationService';
 
 export const NotificationDrawer: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'n1',
-      title: 'Booking Approved',
-      message: 'Sony FX3 Cinema Camera Kit is approved for Nov 1.',
-      time: '15m ago',
-      type: 'booking',
-      read: false,
-    },
-    {
-      id: 'n2',
-      title: 'Return Reminder',
-      message: '3D Printer reservation completed on time. +2 Trust Points awarded!',
-      time: '2h ago',
-      type: 'trust',
-      read: false,
-    },
-    {
-      id: 'n3',
-      title: 'Fair Allocation Update',
-      message: 'You have top priority standing in the Studio B waitlist.',
-      time: '1d ago',
-      type: 'alert',
-      read: true,
-    },
-  ]);
-
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const drawerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    notificationService.getNotifications().then(setNotifications);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -54,10 +24,11 @@ export const NotificationDrawer: React.FC = () => {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const markAllRead = () => {
+    notificationService.markAllRead();
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
-  const getIcon = (type: NotificationItem['type']) => {
+  const getIcon = (type: AppNotification['type']) => {
     switch (type) {
       case 'booking':
         return <CheckCircle2 className="w-4 h-4 text-emerald-600" />;
@@ -145,4 +116,3 @@ export const NotificationDrawer: React.FC = () => {
     </div>
   );
 };
-

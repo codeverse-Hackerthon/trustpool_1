@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
   X,
@@ -20,8 +20,15 @@ import {
   CheckCircle,
   Activity,
   FileText,
+  PlusCircle,
+  Calendar,
+  Settings,
+  Bell,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { UserRole } from '../../types';
+import { useAuth } from '../../hooks/useAuth';
 
 export interface NavItem {
   label: string;
@@ -41,36 +48,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   onCloseMobile,
 }) => {
-  // Navigation structure adhering strictly to architecture requirements
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
   const studentNav: NavItem[] = [
-    { label: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
-    { label: 'Discover Resources', path: '/student/resources', icon: Search },
-    { label: 'My Bookings', path: '/student/bookings', icon: CalendarCheck, badge: 2 },
+    { label: 'Overview', path: '/student/dashboard', icon: LayoutDashboard },
+    { label: 'Explore Resources', path: '/student/resources', icon: Search },
+    { label: 'My Bookings', path: '/student/bookings', icon: CalendarCheck },
     { label: 'Fair Allocation', path: '/student/allocation', icon: Scale },
     { label: 'QR Access', path: '/student/qr-access', icon: QrCode },
     { label: 'Condition Reports', path: '/student/condition-reports', icon: ClipboardCheck },
+    { label: 'Incident Reports', path: '/student/incidents', icon: AlertTriangle },
     { label: 'History', path: '/student/history', icon: History },
+    { label: 'Notifications', path: '/student/notifications', icon: Bell },
+    { label: 'My Profile', path: '/student/profile', icon: User },
   ];
 
   const ownerNav: NavItem[] = [
-    { label: 'Dashboard', path: '/owner/dashboard', icon: LayoutDashboard },
+    { label: 'Overview', path: '/owner/dashboard', icon: LayoutDashboard },
     { label: 'My Resources', path: '/owner/resources', icon: Layers },
-    { label: 'Booking Requests', path: '/owner/requests', icon: Inbox, badge: 1 },
+    { label: 'Add Resource', path: '/owner/resources/add', icon: PlusCircle },
+    { label: 'Booking Requests', path: '/owner/requests', icon: Inbox },
     { label: 'Active Bookings', path: '/owner/active-bookings', icon: Clock },
-    { label: 'Returns', path: '/owner/returns', icon: RotateCcw },
+    { label: 'Availability', path: '/owner/availability', icon: Calendar },
+    { label: 'Return Management', path: '/owner/returns', icon: RotateCcw },
     { label: 'Incidents', path: '/owner/incidents', icon: AlertTriangle },
     { label: 'Analytics', path: '/owner/analytics', icon: BarChart3 },
+    { label: 'Notifications', path: '/owner/notifications', icon: Bell },
+    { label: 'Profile', path: '/owner/profile', icon: User },
   ];
 
   const adminNav: NavItem[] = [
-    { label: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
-    { label: 'User Management', path: '/admin/users', icon: Users },
-    { label: 'Verification', path: '/admin/verification', icon: CheckCircle, badge: 3 },
-    { label: 'Resource Monitoring', path: '/admin/resources', icon: Activity },
-    { label: 'Booking Monitoring', path: '/admin/bookings', icon: CalendarCheck },
+    { label: 'Overview', path: '/admin/dashboard', icon: LayoutDashboard },
+    { label: 'Users', path: '/admin/users', icon: Users },
+    { label: 'Institutions', path: '/admin/verification', icon: CheckCircle },
+    { label: 'Resources', path: '/admin/resources', icon: Activity },
+    { label: 'Bookings', path: '/admin/bookings', icon: CalendarCheck },
     { label: 'Incidents', path: '/admin/incidents', icon: AlertTriangle },
+    { label: 'Disputes', path: '/admin/disputes', icon: Scale },
     { label: 'Audit Logs', path: '/admin/audit-logs', icon: FileText },
     { label: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
+    { label: 'Settings', path: '/admin/settings', icon: Settings },
+    { label: 'Notifications', path: '/admin/notifications', icon: Bell },
+    { label: 'Profile', path: '/admin/profile', icon: User },
   ];
 
   const navMap: Record<UserRole, NavItem[]> = {
@@ -88,12 +113,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const navContent = (
-    <div className="flex h-full flex-col justify-between">
+    <div className="flex h-full flex-col justify-between overflow-y-auto">
       {/* Brand & Section Header */}
       <div>
         <div className="flex h-16 items-center justify-between px-5 border-b border-slate-200">
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm group-hover:bg-slate-800 transition-colors">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#14213D] text-white shadow-xs group-hover:bg-[#1d2f56] transition-colors">
               <ShieldCheck className="h-5 w-5 text-emerald-400" />
             </div>
             <div>
@@ -128,8 +153,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={({ isActive }) =>
                   `flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all group ${
                     isActive
-                      ? 'bg-slate-900 text-white shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-blue-50 text-blue-700 font-semibold shadow-xs'
+                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`
                 }
               >
@@ -138,7 +163,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex items-center gap-2.5">
                       <Icon
                         className={`w-4 h-4 transition-colors ${
-                          isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                          isActive ? 'text-blue-600' : 'text-slate-400 group-hover:text-slate-700'
                         }`}
                       />
                       <span>{item.label}</span>
@@ -147,7 +172,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
                           isActive
-                            ? 'bg-slate-700 text-white'
+                            ? 'bg-blue-600 text-white'
                             : 'bg-slate-200 text-slate-700'
                         }`}
                       >
@@ -162,15 +187,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Trust & Accountability Footer Assurance */}
-      <div className="p-4 m-3 rounded-xl bg-slate-50 border border-slate-200/80">
-        <div className="flex items-center gap-2 text-slate-800 text-xs font-semibold mb-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Fair Share Protocol</span>
+      {/* User Profile Section & Logout Action at Bottom */}
+      <div className="p-3 border-t border-slate-200 bg-slate-50/60 mt-4 space-y-2">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-white border border-slate-200 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-[#14213D] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              {user?.name?.charAt(0) || 'U'}
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-slate-900 truncate">{user?.name || 'User'}</p>
+              <p className="text-[10px] text-slate-500 capitalize truncate">{role} Member</p>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Sign Out"
+            className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
-        <p className="text-[11px] text-slate-500 leading-relaxed">
-          Peer accountability & verified credentials guarantee equal campus access.
-        </p>
+
+        <div className="flex items-center gap-1.5 px-2 text-[11px] text-slate-400">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Verified Institutional Node</span>
+        </div>
       </div>
     </div>
   );
@@ -201,4 +242,3 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
-

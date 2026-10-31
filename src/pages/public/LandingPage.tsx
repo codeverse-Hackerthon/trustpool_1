@@ -30,12 +30,13 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [activePersona, setActivePersona] = useState<UserRole>('student');
 
-  const scrollToHowItWorks = () => {
+  const _scrollToHowItWorks = () => {
     const el = document.getElementById('how-it-works');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
+  void _scrollToHowItWorks;
 
   const handleLaunchRole = (role: UserRole) => {
     switchRole(role);
@@ -43,6 +44,7 @@ export const LandingPage: React.FC = () => {
     if (role === 'owner') navigate('/owner/dashboard');
     if (role === 'admin') navigate('/admin/dashboard');
   };
+  void _scrollToHowItWorks;
 
   return (
     <div className="space-y-20 sm:space-y-28 py-6 sm:py-12">
@@ -63,12 +65,12 @@ export const LandingPage: React.FC = () => {
 
             {/* Main Headline */}
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
-              Trusted & Fair Access to Shared Resources.
+              Share Resources. Build Possibilities.
             </h1>
 
             {/* Problem / Solution Short Explanation */}
             <p className="text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
-              TrustPool eliminates equipment hoarding, chaotic sign-out sheets, and return disputes. We provide an institutional platform that connects campus facilities, labs, and specialized tools through algorithmic fairness, cryptographic QR custody, and verified trust scores.
+              Discover and access underused spaces and equipment across your institution through a trusted, transparent resource-sharing platform.
             </p>
 
             {/* Primary & Secondary CTAs */}
@@ -85,10 +87,10 @@ export const LandingPage: React.FC = () => {
               <Button
                 variant="outline"
                 size="lg"
-                onClick={scrollToHowItWorks}
+                onClick={() => navigate('/register')}
                 className="w-full sm:w-auto bg-white"
               >
-                How It Works
+                Get Started
               </Button>
             </div>
 

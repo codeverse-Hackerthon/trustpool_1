@@ -3,6 +3,7 @@ import { User, UserRole, LoginCredentials, RegisterPayload } from '../types';
 import { authService } from '../services/authService';
 import { storage } from '../utils/storage';
 import { mockUsers } from '../data/mockUsers';
+import { mocksEnabled } from '../services/config';
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [user, setUser] = useState<User | null>(() => {
     const cached = storage.getUser<User>();
-    return cached || mockUsers.student;
+    return cached || (mocksEnabled ? mockUsers.student : null);
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -70,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
    * Fast role-switcher specifically built for testing and hackathon judging
    */
   const switchRole = (newRole: UserRole) => {
+    if (!mocksEnabled) return;
     const newUser = mockUsers[newRole];
     setUser(newUser);
     storage.setUser(newUser);

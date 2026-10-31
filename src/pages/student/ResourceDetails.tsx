@@ -4,9 +4,12 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/StatusBadge';
-import { useResource } from '../../hooks/useResources';
+import { useResource, useResources } from '../../hooks/useResources';
 import { useAuth } from '../../hooks/useAuth';
 import { BookingFlowModal } from '../../components/booking/BookingFlowModal';
+import { aiRecommendationService } from '../../services/aiService';
+import { AIFeatureBadge } from '../../components/ui/AIFeatureBadge';
+
 import {
   MapPin,
   ShieldCheck,
@@ -26,6 +29,7 @@ import {
 export const ResourceDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { data: resource, isLoading, isError } = useResource(id || 'res-101');
+  const { data: allResources } = useResources();
   const { user } = useAuth();
 
   // Selected gallery image index
@@ -34,6 +38,12 @@ export const ResourceDetails: React.FC = () => {
   const [copiedLink, setCopiedLink] = useState(false);
 
   const userTrustScore = user?.trustScore ?? 92;
+
+  // AI Smart Alternatives
+  const recommendations = resource
+    ? aiRecommendationService.getSmartAlternatives(resource, allResources || [])
+    : [];
+
 
   if (isLoading) {
     return (
@@ -334,7 +344,101 @@ export const ResourceDetails: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Smart Resource Recommendations */}
+          <Card className="border-purple-200/90 shadow-sm bg-gradient-to-br from-purple-50/40 via-white to-indigo-50/30">
+            <CardHeader className="border-b border-purple-100/80 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-sm font-bold text-slate-900">
+                      Smart Alternative Recommendations
+                    </CardTitle>
+                    <AIFeatureBadge label="AI Recommendations (Simulated Preview)" variant="purple" size="sm" />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Suggested alternatives when "{resource.title}" is reserved or when comparing matching department hardware.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono font-medium text-purple-700 bg-purple-100/70 px-2.5 py-0.5 rounded self-start sm:self-auto">
+                  Semantic Clustering
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-3">
+              {recommendations.length > 0 ? (
+                recommendations.map((rec) => (
+                  <div
+                    key={rec.resource.id}
+                    className="p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-purple-300 hover:shadow-xs transition-all space-y-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={rec.resource.imageUrl || 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=200&q=80'}
+                          alt={rec.resource.title}
+                          className="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0"
+                        />
+                        <div>
+                          <Link
+                            to={`/student/resources/${rec.resource.id}`}
+                            className="font-bold text-xs text-slate-900 hover:text-purple-600 transition-colors line-clamp-1"
+                          >
+                            {rec.resource.title}
+                          </Link>
+                          <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
+                            <span className="capitalize">{rec.resource.category}</span>
+                            <span>•</span>
+                            <span className="truncate max-w-[150px]">{rec.resource.location}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="px-2 py-0.5 rounded font-mono text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
+                          {rec.similarityScore}% Match
+                        </span>
+                        <div className="mt-1">
+                          <StatusBadge
+                            status={rec.immediateAvailability ? 'APPROVED' : 'PENDING'}
+                            label={rec.immediateAvailability ? 'Available' : 'Contested'}
+                            size="sm"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-600 italic">
+                      💡 {rec.matchReason}
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
+                      <div className="flex flex-wrap gap-1.5 text-[10px]">
+                        {rec.advantages.map((adv, i) => (
+                          <span
+                            key={i}
+                            className="px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200 font-medium"
+                          >
+                            ✓ {adv}
+                          </span>
+                        ))}
+                      </div>
+
+                      <Link to={`/student/resources/${rec.resource.id}`}>
+                        <Button variant="outline" size="sm" className="text-xs h-7 px-2.5">
+                          Switch to Alternative
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 py-2">No direct alternatives found in this category.</p>
+              )}
+            </CardContent>
+          </Card>
         </div>
+
 
         {/* Right Column: Custodian Verification, Trust Status & Action CTA */}
         <div className="space-y-6">

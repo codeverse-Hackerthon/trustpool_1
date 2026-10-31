@@ -62,12 +62,12 @@ export const OwnerDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Page Header */}
       <PageHeader
-        title={`Custodian Console — ${user?.name || 'Dr. Sarah Chen'}`}
+        title={`Welcome back, ${user?.name || 'Dr. Sarah Chen'}`}
         description="Oversee departmental shared assets, approve student reservations, and verify returned equipment condition."
         tag="Verified Facility Custodian"
         actions={
           <div className="flex items-center gap-2">
-            <Link to="/owner/resources">
+            <Link to="/owner/resources/add">
               <Button size="sm" leftIcon={<Plus className="w-3.5 h-3.5" />}>
                 Add New Resource
               </Button>

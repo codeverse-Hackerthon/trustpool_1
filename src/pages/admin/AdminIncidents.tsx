@@ -13,8 +13,13 @@ import {
   CheckCircle2,
   Scale,
   Eye,
+  Bot,
 } from 'lucide-react';
+
 import { Incident } from '../../types';
+import { aiIncidentService } from '../../services/aiService';
+import { AIFeatureBadge } from '../../components/ui/AIFeatureBadge';
+
 
 export const AdminIncidents: React.FC = () => {
   const { data: incidents, isLoading } = useIncidents();
@@ -263,7 +268,66 @@ export const AdminIncidents: React.FC = () => {
               </p>
             </div>
 
+            {/* AI Executive Summarization Panel */}
+            {(() => {
+              const aiSummary = aiIncidentService.summarizeIncident(selectedIncident);
+              return (
+                <div className="p-3.5 rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/60 to-indigo-50/40 space-y-2.5 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-purple-100 pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Bot className="w-4 h-4 text-purple-600" />
+                      <span className="font-bold text-slate-900 text-xs">
+                        AI Incident Summary & Arbitration Assistant
+                      </span>
+                      <AIFeatureBadge label="AI Summary (Simulated Preview)" variant="purple" size="sm" />
+                    </div>
+                    <span className="text-[10px] font-mono text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-bold">
+                      NLP Dispute Analysis
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
+                    {aiSummary.conciseSummary}
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]">
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100">
+                      <span className="text-slate-400 block font-semibold uppercase">Root Cause</span>
+                      <span className="font-bold text-slate-800">{aiSummary.rootCauseCategory}</span>
+                    </div>
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100">
+                      <span className="text-slate-400 block font-semibold uppercase">Risk Severity</span>
+                      <span className="font-bold text-rose-700">{aiSummary.riskSeverityTier}</span>
+                    </div>
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100 col-span-2 sm:col-span-1">
+                      <span className="text-slate-400 block font-semibold uppercase">Suggested Ruling</span>
+                      <span className="font-bold text-purple-800">
+                        -{aiSummary.suggestedAdministrativeRuling.recommendedPenalty} pts ({aiSummary.suggestedAdministrativeRuling.recommendedAction})
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-purple-100/60">
+                    <span className="text-[10px] text-slate-500 italic">
+                      🔍 {aiSummary.photographicDiscrepancyNotes}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPenaltyPoints(aiSummary.suggestedAdministrativeRuling.recommendedPenalty);
+                        setArbitrationNotes(aiSummary.suggestedAdministrativeRuling.justification);
+                      }}
+                      className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-purple-600 hover:bg-purple-700 text-white transition-colors shrink-0 shadow-2xs self-end sm:self-auto"
+                    >
+                      Apply AI Recommendation
+                    </button>
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Evidence Exhibits View */}
+
             {selectedIncident.evidenceUrls && selectedIncident.evidenceUrls.length > 0 && (
               <div>
                 <span className="font-bold text-slate-900 block mb-2 uppercase tracking-wider text-[11px]">

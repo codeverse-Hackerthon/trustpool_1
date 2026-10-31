@@ -241,8 +241,8 @@ export const StudentDashboard: React.FC = () => {
     <div className="space-y-8">
       {/* ── Page Header ── */}
       <PageHeader
-        title={`Welcome back, ${user?.name?.split(' ')[0] ?? 'Alex'} 👋`}
-        description="Your resource access hub — bookings, allocation, and check-in passes at a glance."
+        title={`Good morning, ${user?.name?.split(' ')[0] ?? 'Alex'}`}
+        description="Discover resources and make the most of what's available around you."
         tag="Student Dashboard"
         actions={
           <div className="flex items-center gap-2">

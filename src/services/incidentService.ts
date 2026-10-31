@@ -2,92 +2,59 @@ import { api } from './apiClient';
 import {
   Incident,
   ReportIncidentPayload,
-  ApiResponse,
 } from '../types';
 
-let localIncidents: Incident[] = [
-  {
-    id: 'inc-101',
-    bookingId: 'book-901',
-    resourceId: 'res-101',
-    resourceTitle: 'High-Speed Sony FX3 Cinema Camera Kit',
-    reportedById: 'user-own-1',
-    reportedByName: 'Dr. Sarah Chen',
-    reportedByRole: 'owner',
-    againstUserId: 'user-stu-3',
-    againstUserName: 'Taylor Brooks',
-    type: 'late_return',
-    severity: 'medium',
-    status: 'investigating',
-    title: '45-minute overdue return without prior notice',
-    description: 'Borrower did not arrive at Studio 204 dropoff station at 14:00. Next reserved student was delayed by 30 minutes.',
-    evidenceUrls: [
-      'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80',
-    ],
-    resolutionNotes: 'Borrower cited shuttle bus delay. Awaiting admin review for trust score adjustment.',
-    trustPenaltyApplied: 0,
-    createdAt: '2026-10-25T14:45:00Z',
-  },
-  {
-    id: 'inc-102',
-    bookingId: 'book-882',
-    resourceId: 'res-107',
-    resourceTitle: '4-Channel 1GHz Digital Storage Oscilloscope',
-    reportedById: 'user-stu-1',
-    reportedByName: 'Alex Rivera',
-    reportedByRole: 'student',
-    type: 'missing_item',
-    severity: 'low',
-    status: 'resolved',
-    title: 'Channel 3 BNC passive probe tip was missing upon pickup',
-    description: 'Documented during pre-use condition inspection at Bench 07. Reported immediately so previous borrower could be queried.',
-    evidenceUrls: [
-      'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=800&q=80',
-    ],
-    resolutionNotes: 'Lab custodian located spare probe in drawer 4. No borrower penalty applied due to honest pre-use documentation.',
-    trustPenaltyApplied: 0,
-    createdAt: '2026-10-18T10:15:00Z',
-    resolvedAt: '2026-10-18T11:00:00Z',
-  },
-  {
-    id: 'inc-103',
-    bookingId: 'book-850',
-    resourceId: 'res-102',
-    resourceTitle: 'Precision Bambu Lab X1-Carbon 3D Printer',
-    reportedById: 'user-own-1',
-    reportedByName: 'Dr. Sarah Chen',
-    reportedByRole: 'owner',
-    againstUserId: 'user-stu-7',
-    againstUserName: 'Devin Vance',
-    type: 'damage',
-    severity: 'high',
-    status: 'open',
-    title: 'Scratched PEI build plate surface from metal knife',
-    description: 'Heavy linear scratches down to spring steel core. Borrower attempted to remove ABS print with metal scraper instead of approved plastic tool.',
-    evidenceUrls: [
-      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
-    ],
-    resolutionNotes: 'Replacement PEI sheet requested ($35 institutional cost). Trust score penalty under calculation.',
-    trustPenaltyApplied: 15,
-    createdAt: '2026-10-29T16:30:00Z',
-  },
-];
+const normalizeIncident = (i: any): Incident => {
+  return {
+    id: String(i.id),
+    bookingId: i.bookingId || i.booking_id,
+    resourceId: String(i.resourceId || i.resource_id),
+    resourceTitle: i.resourceTitle || 'Reported Resource Incident',
+    reportedById: String(i.reportedById || i.reported_by),
+    reportedByName: i.reportedByName || 'Alex Rivera',
+    reportedByRole: (i.reportedByRole || 'student').toLowerCase() as any,
+    againstUserId: i.againstUserId,
+    againstUserName: i.againstUserName,
+    type: (i.type || i.incident_type || 'other').toLowerCase() as any,
+    severity: (i.severity || 'low').toLowerCase() as any,
+    status: (i.status || 'open').toLowerCase() as any,
+    title: i.title,
+    description: i.description,
+    evidenceUrls: i.evidenceUrls || i.evidence_urls || [],
+    resolutionNotes: i.resolutionNotes || i.resolution_notes,
+    trustPenaltyApplied: i.trustPenaltyApplied || 0,
+    createdAt: i.createdAt || i.created_at || new Date().toISOString(),
+    resolvedAt: i.resolvedAt || i.resolved_at,
+  };
+};
 
 export const incidentService = {
   getIncidents: async (): Promise<Incident[]> => {
     try {
-      const response = await api.get<ApiResponse<Incident[]>>('/incidents');
-      return response.data;
+      const response = await api.get<any>('/incidents');
+      const list = response?.data || response;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map(normalizeIncident);
+      }
+      return [];
     } catch {
-      return localIncidents;
+      return [];
     }
   },
 
   reportIncident: async (payload: ReportIncidentPayload): Promise<Incident> => {
     try {
-      const response = await api.post<ApiResponse<Incident>>('/incidents', payload);
-      return response.data;
-    } catch {
+      const response = await api.post<any>('/incidents', {
+        resource_id: payload.resourceId,
+        booking_id: payload.bookingId,
+        incident_type: payload.type.toUpperCase(),
+        severity: payload.severity.toUpperCase(),
+        title: payload.title,
+        description: payload.description,
+      });
+      const data = response?.data || response;
+      return normalizeIncident(data);
+    } catch (error) {
       const newInc: Incident = {
         id: `inc-${Date.now().toString().slice(-4)}`,
         bookingId: payload.bookingId,
@@ -105,7 +72,6 @@ export const incidentService = {
         evidenceUrls: payload.evidenceUrls || [],
         createdAt: new Date().toISOString(),
       };
-      localIncidents = [newInc, ...localIncidents];
       return newInc;
     }
   },
@@ -117,28 +83,30 @@ export const incidentService = {
     trustPenaltyApplied?: number
   ): Promise<Incident> => {
     try {
-      const response = await api.patch<ApiResponse<Incident>>(`/incidents/${id}/status`, {
-        status,
+      const response = await api.patch<any>(`/incidents/${id}/status`, {
+        status: status.toUpperCase(),
+        notes: resolutionNotes,
         resolutionNotes,
         trustPenaltyApplied,
       });
-      return response.data;
-    } catch {
-      const idx = localIncidents.findIndex((i) => i.id === id);
-      if (idx !== -1) {
-        localIncidents[idx] = {
-          ...localIncidents[idx],
-          status,
-          resolutionNotes: resolutionNotes || localIncidents[idx].resolutionNotes,
-          trustPenaltyApplied:
-            trustPenaltyApplied !== undefined
-              ? trustPenaltyApplied
-              : localIncidents[idx].trustPenaltyApplied,
-          resolvedAt: status === 'resolved' ? new Date().toISOString() : undefined,
-        };
-        return localIncidents[idx];
-      }
-      return localIncidents[0];
+      const data = response?.data || response;
+      return normalizeIncident(data);
+    } catch (error) {
+      return {
+        id,
+        resourceId: 'res-1',
+        resourceTitle: 'Incident Resource',
+        reportedById: 'user-1',
+        reportedByName: 'User',
+        reportedByRole: 'student',
+        type: 'damage',
+        severity: 'medium',
+        status,
+        title: 'Updated Incident',
+        description: '',
+        resolutionNotes,
+        createdAt: new Date().toISOString(),
+      };
     }
   },
 };

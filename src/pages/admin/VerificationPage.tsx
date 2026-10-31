@@ -12,8 +12,11 @@ import {
   CheckCircle2,
   FileCheck,
   Eye,
+  Bot,
 } from 'lucide-react';
 import { User } from '../../types';
+import { AIFeatureBadge } from '../../components/ui/AIFeatureBadge';
+
 
 export const VerificationPage: React.FC = () => {
   const { data: users, isLoading } = useAllUsers();
@@ -209,7 +212,39 @@ export const VerificationPage: React.FC = () => {
               </p>
             </div>
 
+            {/* AI Document Extraction Assistant Preview */}
+            <div className="p-3.5 rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-indigo-50/40 space-y-2.5 text-xs shadow-2xs">
+              <div className="flex items-center justify-between border-b border-purple-100 pb-2">
+                <div className="flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-purple-600" />
+                  <span className="font-bold text-slate-900 text-xs">
+                    AI Document Extraction & Credential Match
+                  </span>
+                  <AIFeatureBadge label="AI Assistant (Simulated Preview)" variant="purple" size="sm" />
+                </div>
+                <span className="text-[10px] font-mono text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-bold">
+                  98.4% Confidence
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
+                <div className="bg-white/80 p-2 rounded-lg border border-purple-100/80">
+                  <span className="text-slate-400 text-[10px] block font-semibold">Document Verified</span>
+                  <span className="font-bold text-slate-900">Institutional Faculty Credentials Letter</span>
+                </div>
+                <div className="bg-white/80 p-2 rounded-lg border border-purple-100/80">
+                  <span className="text-slate-400 text-[10px] block font-semibold">Extracted Subject ID</span>
+                  <span className="font-mono font-bold text-slate-900">{reviewApplicant.institutionId}</span>
+                </div>
+              </div>
+
+              <p className="text-[10px] text-slate-500 italic pt-1 border-t border-purple-100/60">
+                ✓ AI Document OCR verified official university letterhead seal and registrar cryptographic watermark.
+              </p>
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+
               <Button variant="outline" size="sm" onClick={() => setReviewApplicant(null)}>
                 Cancel
               </Button>

@@ -17,7 +17,15 @@ import {
   Building,
   Sparkles,
   Layers,
+  Upload,
+  FileCheck,
+  Clock,
+  Bot,
 } from 'lucide-react';
+
+import { aiDocumentService, DocumentExtractionResult } from '../../services/aiService';
+import { AIFeatureBadge } from '../ui/AIFeatureBadge';
+
 
 interface BookingFlowModalProps {
   isOpen: boolean;
@@ -55,6 +63,21 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
   // Form error states
   const [validationError, setValidationError] = useState<string | null>(null);
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+
+  // Eligibility Document Assistance state
+  const [uploadedDoc, setUploadedDoc] = useState<DocumentExtractionResult | null>(null);
+  const [isDocProcessing, setIsDocProcessing] = useState(false);
+
+  const handleProcessDoc = async (fileObj: File | { name: string; size: number }) => {
+    setIsDocProcessing(true);
+    try {
+      const res = await aiDocumentService.processEligibilityDocument(fileObj);
+      setUploadedDoc(res);
+    } finally {
+      setIsDocProcessing(false);
+    }
+  };
+
 
   // Time slot options
   const TIME_SLOTS = [
@@ -476,7 +499,116 @@ export const BookingFlowModal: React.FC<BookingFlowModalProps> = ({
               </p>
             </div>
 
+            {/* AI Eligibility Document Assistance Card */}
+            <div className="p-3.5 rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/50 via-white to-blue-50/40 space-y-3 text-xs shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-purple-100 pb-2">
+                <div className="flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-purple-600" />
+                  <span className="font-bold text-slate-900 text-xs">
+                    Eligibility Document Assistance
+                  </span>
+                  <AIFeatureBadge label="AI Assistant (Simulated Preview)" variant="purple" size="sm" />
+                </div>
+                <span className="text-[10px] text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-mono font-medium self-start sm:self-auto">
+                  OCR Extraction
+                </span>
+              </div>
+
+              <p className="text-[11px] text-slate-600 leading-relaxed">
+                Upload or select an institutional certification to verify qualification credentials for specialized facilities.
+              </p>
+
+              {/* Document upload or preset buttons */}
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5 items-center">
+                  <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">
+                    Test Sample Documents:
+                  </span>
+                  {[
+                    { label: 'Student University ID', file: 'student_id_alex_rivera.pdf' },
+                    { label: 'Lab Safety Cert (EHS)', file: 'ehs_lab_safety_level2.pdf' },
+                    { label: 'Camera Operator Card', file: 'camera_operator_license.pdf' },
+                  ].map((doc) => (
+                    <button
+                      key={doc.file}
+                      type="button"
+                      onClick={() => handleProcessDoc({ name: doc.file, size: 245000 })}
+                      className="px-2.5 py-1 rounded-lg border border-purple-200 bg-white hover:bg-purple-50 text-purple-900 font-medium text-[11px] shadow-2xs transition-all"
+                    >
+                      📄 {doc.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Upload File Input */}
+                <div className="pt-1">
+                  <label className="flex items-center justify-center p-3 rounded-xl border-2 border-dashed border-purple-200 hover:border-purple-400 bg-white/70 hover:bg-purple-50/30 cursor-pointer transition-colors text-slate-600 text-center gap-2">
+                    <Upload className="w-4 h-4 text-purple-600" />
+                    <span className="text-[11px] font-medium">
+                      {isDocProcessing ? 'Scanning & extracting document credentials...' : 'Upload Certification Document (PDF / PNG / JPG)'}
+                    </span>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleProcessDoc(file);
+                      }}
+                      className="hidden"
+                      disabled={isDocProcessing}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Extraction Result Preview */}
+              {isDocProcessing && (
+                <div className="p-3 rounded-lg bg-purple-50 text-purple-900 flex items-center justify-center gap-2 text-xs">
+                  <Clock className="w-4 h-4 animate-spin text-purple-600" />
+                  <span>Processing document OCR & verifying digital watermark...</span>
+                </div>
+              )}
+
+              {uploadedDoc && !isDocProcessing && (
+                <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/60 space-y-2 text-xs animate-fadeIn">
+                  <div className="flex items-center justify-between border-b border-emerald-200 pb-1.5">
+                    <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                      <FileCheck className="w-4 h-4 text-emerald-600" />
+                      {uploadedDoc.documentType} Extracted
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-bold">
+                      {uploadedDoc.confidenceScore}% OCR Confidence
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Credential Holder</span>
+                      <span className="font-semibold text-slate-900">{uploadedDoc.holderName}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Institutional ID</span>
+                      <span className="font-mono font-bold text-slate-900">{uploadedDoc.institutionalId}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Accredited Authority</span>
+                      <span className="font-medium text-slate-700 truncate block">{uploadedDoc.issuingAuthority}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 text-[10px] block">Validity Expiry</span>
+                      <span className="font-medium text-emerald-700">Valid through {uploadedDoc.expiryDate}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-emerald-800 italic pt-1 border-t border-emerald-200/60">
+                    ✓ {uploadedDoc.aiNotes}
+                  </p>
+                </div>
+              )}
+            </div>
+
             <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+
               <Button
                 variant="outline"
                 size="sm"

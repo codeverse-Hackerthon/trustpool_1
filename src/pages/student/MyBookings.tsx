@@ -19,12 +19,13 @@ import {
 
 export const MyBookings: React.FC = () => {
   const { data: bookings, isLoading } = useMyBookings();
-  const [filterTab, setFilterTab] = useState<'all' | 'active' | 'pending' | 'completed'>('all');
+  const [filterTab, setFilterTab] = useState<'all' | 'pending' | 'approved' | 'active' | 'completed' | 'cancelled' | 'rejected'>('all');
 
   const filteredBookings = (bookings || []).filter((b) => {
-    if (filterTab === 'active') return b.status === 'active' || b.status === 'approved';
-    if (filterTab === 'pending') return b.status === 'pending';
-    if (filterTab === 'completed') return b.status === 'completed';
+    if (filterTab === 'all') return true;
+    return b.status.toLowerCase() === filterTab;
+
+
     return true;
   });
 
@@ -55,20 +56,27 @@ export const MyBookings: React.FC = () => {
       />
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 pb-3">
         {[
-          { key: 'all', label: 'All Reservations' },
-          { key: 'active', label: 'Active & Approved' },
-          { key: 'pending', label: 'Pending Review' },
-          { key: 'completed', label: 'Past & Completed' },
+          { key: 'all', label: 'All' },
+          { key: 'pending', label: 'Pending' },
+          { key: 'approved', label: 'Approved' },
+          { key: 'active', label: 'Active' },
+          { key: 'completed', label: 'Completed' },
+          { key: 'cancelled', label: 'Cancelled' },
+          { key: 'rejected', label: 'Rejected' },
+
+
+
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setFilterTab(tab.key as any)}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
               filterTab === tab.key
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
+                ? 'bg-[#14213D] text-white shadow-xs'
+                : 'text-slate-600 bg-white border border-slate-200 hover:bg-slate-50'
+
             }`}
           >
             {tab.label}

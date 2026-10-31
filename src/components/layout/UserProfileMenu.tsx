@@ -11,6 +11,7 @@ import {
   Check,
 } from 'lucide-react';
 import { UserRole } from '../../types';
+import { mocksEnabled } from '../../services/config';
 
 export const UserProfileMenu: React.FC = () => {
   const { user, role, switchRole, logout } = useAuth();
@@ -105,8 +106,8 @@ export const UserProfileMenu: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Role Switcher (For rapid testing across all 3 roles) */}
-          <div className="px-3 py-2 border-b border-slate-100">
+          {/* Available only in the explicitly enabled local demo mode. */}
+          {mocksEnabled && <div className="px-3 py-2 border-b border-slate-100">
             <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-1 mb-1">
               Switch Perspective
             </p>
@@ -128,14 +129,14 @@ export const UserProfileMenu: React.FC = () => {
                 {role === r && <Check className="w-3.5 h-3.5 text-slate-900" />}
               </button>
             ))}
-          </div>
+          </div>}
 
           {/* Actions */}
           <div className="p-1">
             <button
               onClick={() => {
                 setIsOpen(false);
-                navigate('/student/dashboard');
+                navigate(`/${role}/profile`);
               }}
               className="w-full flex items-center gap-2 px-3 py-1.5 rounded-md text-xs text-slate-600 hover:bg-slate-50"
             >

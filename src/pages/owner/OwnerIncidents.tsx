@@ -18,8 +18,12 @@ import {
   ShieldAlert,
   Clock,
   Eye,
+  Bot,
 } from 'lucide-react';
 import { Incident, IncidentSeverity } from '../../types';
+import { aiIncidentService } from '../../services/aiService';
+import { AIFeatureBadge } from '../../components/ui/AIFeatureBadge';
+
 
 export const OwnerIncidents: React.FC = () => {
   const { data: incidents, isLoading } = useIncidents();
@@ -460,7 +464,54 @@ export const OwnerIncidents: React.FC = () => {
               </div>
             </div>
 
+            {/* AI Executive Summarization Panel */}
+            {(() => {
+              const aiSummary = aiIncidentService.summarizeIncident(selectedIncident);
+              return (
+                <div className="p-3.5 rounded-xl border border-purple-200/90 bg-gradient-to-br from-purple-50/60 to-indigo-50/40 space-y-2.5 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-purple-100 pb-2">
+                    <div className="flex items-center gap-1.5">
+                      <Bot className="w-4 h-4 text-purple-600" />
+                      <span className="font-bold text-slate-900 text-xs">
+                        AI Incident Summary (Simulated NLP Preview)
+                      </span>
+                      <AIFeatureBadge label="AI Summary (Simulated Preview)" variant="purple" size="sm" />
+                    </div>
+                    <span className="text-[10px] font-mono text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-bold">
+                      NLP Analysis
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
+                    {aiSummary.conciseSummary}
+                  </p>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[10px]">
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100">
+                      <span className="text-slate-400 block font-semibold uppercase">Root Cause</span>
+                      <span className="font-bold text-slate-800">{aiSummary.rootCauseCategory}</span>
+                    </div>
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100">
+                      <span className="text-slate-400 block font-semibold uppercase">Risk Severity</span>
+                      <span className="font-bold text-rose-700">{aiSummary.riskSeverityTier}</span>
+                    </div>
+                    <div className="bg-white/80 p-2 rounded-lg border border-purple-100 col-span-2 sm:col-span-1">
+                      <span className="text-slate-400 block font-semibold uppercase">Recommended Action</span>
+                      <span className="font-bold text-purple-800">
+                        {aiSummary.suggestedAdministrativeRuling.recommendedAction}
+                      </span>
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 italic pt-1 border-t border-purple-100/60">
+                    🔍 {aiSummary.photographicDiscrepancyNotes}
+                  </p>
+                </div>
+              );
+            })()}
+
             {/* Photographic Evidence Previews */}
+
             {selectedIncident.evidenceUrls && selectedIncident.evidenceUrls.length > 0 && (
               <div>
                 <span className="font-bold text-slate-900 block mb-2 uppercase tracking-wider text-[11px]">

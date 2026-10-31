@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: trustpool-backend
+    env: python
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt && alembic upgrade head
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_NAME
+        value: "trustPool API"
+      - key: APP_ENV
+        value: "production"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: '["https://trustpool.vercel.app","http://localhost:5173"]'
+      - key: AI_ENABLED
+        value: "true"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+

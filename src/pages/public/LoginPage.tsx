@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -9,19 +9,22 @@ import { UserRole } from '../../types';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading } = useAuth();
 
   const [email, setEmail] = useState('alex.rivera@university.edu');
-  const [password, setPassword] = useState('••••••••');
+  const [password, setPassword] = useState('Password123!');
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await login({ email, password, role: selectedRole });
 
-    if (selectedRole === 'student') navigate('/student/dashboard');
-    else if (selectedRole === 'owner') navigate('/owner/dashboard');
-    else navigate('/admin/dashboard');
+    const destination = (location.state as { from?: string } | null)?.from;
+    if (destination) navigate(destination, { replace: true });
+    else if (selectedRole === 'student') navigate('/student/dashboard');
+    else if (selectedRole === 'admin') navigate('/admin/dashboard');
+    else navigate('/owner/dashboard');
   };
 
   const handleQuickRoleSelect = (role: UserRole) => {
@@ -29,6 +32,7 @@ export const LoginPage: React.FC = () => {
     if (role === 'student') setEmail('alex.rivera@university.edu');
     else if (role === 'owner') setEmail('sarah.chen@university.edu');
     else setEmail('admin@trustpool.edu');
+    setPassword('Password123!');
   };
 
   return (
@@ -99,9 +103,7 @@ export const LoginPage: React.FC = () => {
                   <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                   SSO & Token Auth Ready
                 </span>
-                <span className="text-slate-400 cursor-not-allowed">
-                  Forgot password?
-                </span>
+                <Link to="/forgot-password" className="text-slate-600 hover:underline">Forgot password?</Link>
               </div>
 
               <Button
@@ -110,7 +112,7 @@ export const LoginPage: React.FC = () => {
                 isLoading={isLoading}
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                Sign In as {selectedRole.toUpperCase()}
+                Sign In
               </Button>
             </form>
           </CardContent>

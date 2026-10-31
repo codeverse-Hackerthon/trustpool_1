@@ -8,6 +8,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useAuditLogs } from '../../hooks/useAdmin';
 import { useIncidents } from '../../hooks/useIncidents';
 import { formatDateTime } from '../../utils/formatters';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import {
   ShieldCheck,
   Users,
@@ -32,6 +33,23 @@ export const AdminDashboard: React.FC = () => {
   const totalResources = 128;
   const activeBookings = 18;
   const openIncidents = incidents?.filter((i) => i.status !== 'resolved').length || 2;
+
+  const bookingTrendData = [
+    { day: 'Mon', volume: 14 },
+    { day: 'Tue', volume: 22 },
+    { day: 'Wed', volume: 34 },
+    { day: 'Thu', volume: 38 },
+    { day: 'Fri', volume: 28 },
+    { day: 'Sat', volume: 16 },
+    { day: 'Sun', volume: 10 },
+  ];
+
+  const categoryDistributionData = [
+    { name: 'Equipment', count: 54 },
+    { name: 'Labs', count: 38 },
+    { name: 'Rooms', count: 26 },
+    { name: 'Studios', count: 18 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -165,6 +183,59 @@ export const AdminDashboard: React.FC = () => {
         })}
       </div>
 
+      {/* Platform Analytics Overview Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Booking Volume Trend */}
+        <Card className="border-slate-200">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm">Weekly Reservation Activity</CardTitle>
+              <p className="text-[11px] text-slate-500">Loan demand and checkout volume by weekday</p>
+            </div>
+            <Link to="/admin/analytics" className="text-xs text-blue-600 hover:underline font-medium">
+              Deep Analytics →
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <div className="h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={bookingTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="volume" stroke="#2563EB" fill="#EFF6FF" strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Category Distribution */}
+        <Card className="border-slate-200">
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-sm">Resource Inventory by Category</CardTitle>
+              <p className="text-[11px] text-slate-500">Distribution of campus labs, equipment & spaces</p>
+            </div>
+            <Link to="/admin/resources" className="text-xs text-blue-600 hover:underline font-medium">
+              View All →
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <div className="h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={categoryDistributionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#14213D" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Recent Audit Log Feed */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -207,18 +278,19 @@ export const AdminDashboard: React.FC = () => {
                   <TableRow key={log.id}>
                     <TableCell className="font-mono text-xs font-bold text-slate-700">
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px]">
-                        {log.action}
+                        {log.actionTitle || log.eventType}
                       </span>
                     </TableCell>
                     <TableCell className="text-xs text-slate-900 font-semibold">
-                      {log.performedBy}
+                      {log.performedBy.name}
                     </TableCell>
                     <TableCell className="text-xs text-slate-600">
-                      {log.target}
+                      {log.targetEntity}
                     </TableCell>
                     <TableCell className="text-xs text-slate-500 max-w-sm truncate">
                       {log.details}
                     </TableCell>
+
                     <TableCell className="text-xs text-slate-400">
                       {formatDateTime(log.timestamp)}
                     </TableCell>

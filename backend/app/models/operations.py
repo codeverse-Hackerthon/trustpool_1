@@ -1,0 +1,15 @@
+import enum,uuid
+from datetime import datetime
+from sqlalchemy import Boolean,DateTime,Enum,ForeignKey,String,Text
+from sqlalchemy.dialects.postgresql import JSONB,UUID
+from sqlalchemy.orm import Mapped,mapped_column
+from app.models.base import Base,TimestampMixin
+class ReportType(str,enum.Enum): BEFORE_USE="BEFORE_USE";AFTER_USE="AFTER_USE"
+class IncidentSeverity(str,enum.Enum): LOW="LOW";MEDIUM="MEDIUM";HIGH="HIGH";CRITICAL="CRITICAL"
+class IncidentStatus(str,enum.Enum): OPEN="OPEN";UNDER_REVIEW="UNDER_REVIEW";RESOLVED="RESOLVED";DISMISSED="DISMISSED"
+class ConditionReport(TimestampMixin,Base):
+ __tablename__="condition_reports";id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4);booking_id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("bookings.id"),index=True);resource_id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("resources.id"),index=True);submitted_by:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("users.id"));report_type:Mapped[ReportType]=mapped_column(Enum(ReportType,name="report_type"));overall_condition:Mapped[str]=mapped_column(String(64));description:Mapped[str|None]=mapped_column(Text);evidence_urls:Mapped[list]=mapped_column(JSONB,default=list);damage_detected:Mapped[bool]=mapped_column(Boolean,default=False)
+class Incident(TimestampMixin,Base):
+ __tablename__="incidents";id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4);booking_id:Mapped[uuid.UUID|None]=mapped_column(UUID(as_uuid=True),ForeignKey("bookings.id"),index=True);resource_id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("resources.id"),index=True);reported_by:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("users.id"));assigned_admin_id:Mapped[uuid.UUID|None]=mapped_column(UUID(as_uuid=True),ForeignKey("users.id"));incident_type:Mapped[str]=mapped_column(String(64));title:Mapped[str]=mapped_column(String(255));description:Mapped[str]=mapped_column(Text);evidence_urls:Mapped[list]=mapped_column(JSONB,default=list);severity:Mapped[IncidentSeverity]=mapped_column(Enum(IncidentSeverity,name="incident_severity"));status:Mapped[IncidentStatus]=mapped_column(Enum(IncidentStatus,name="incident_status"),default=IncidentStatus.OPEN);resolution_notes:Mapped[str|None]=mapped_column(Text);resolved_at:Mapped[datetime|None]=mapped_column(DateTime(timezone=True))
+class Notification(TimestampMixin,Base):
+ __tablename__="notifications";id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),primary_key=True,default=uuid.uuid4);recipient_id:Mapped[uuid.UUID]=mapped_column(UUID(as_uuid=True),ForeignKey("users.id"),index=True);title:Mapped[str]=mapped_column(String(255));message:Mapped[str]=mapped_column(Text);notification_type:Mapped[str]=mapped_column(String(64),index=True);related_entity_type:Mapped[str|None]=mapped_column(String(64));related_entity_id:Mapped[uuid.UUID|None]=mapped_column(UUID(as_uuid=True));read_at:Mapped[datetime|None]=mapped_column(DateTime(timezone=True),index=True)
