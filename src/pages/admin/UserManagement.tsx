@@ -9,10 +9,7 @@ import { useAllUsers, useVerifyUserMutation } from '../../hooks/useAdmin';
 import {
   UserCheck,
   UserX,
-  ShieldCheck,
-  Search,
   CheckCircle2,
-  Sliders,
   Eye,
 } from 'lucide-react';
 import { User } from '../../types';

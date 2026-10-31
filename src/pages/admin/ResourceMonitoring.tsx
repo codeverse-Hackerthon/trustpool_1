@@ -8,11 +8,9 @@ import { SearchBar } from '../../components/ui/SearchBar';
 import { Select } from '../../components/ui/Select';
 import { useResources } from '../../hooks/useResources';
 import {
-  Layers,
   Wrench,
   CheckCircle2,
   Clock,
-  ShieldCheck,
   Building,
 } from 'lucide-react';
 import { RESOURCE_CATEGORIES } from '../../utils/constants';

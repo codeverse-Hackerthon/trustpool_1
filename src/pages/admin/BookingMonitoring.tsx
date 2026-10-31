@@ -9,10 +9,8 @@ import { Modal } from '../../components/ui/Modal';
 import { useMyBookings, useUpdateBookingStatus } from '../../hooks/useBookings';
 import { formatDateTime } from '../../utils/formatters';
 import {
-  Activity,
   CheckCircle2,
   XCircle,
-  Clock,
   ShieldCheck,
 } from 'lucide-react';
 import { Booking } from '../../types';
