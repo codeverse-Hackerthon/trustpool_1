@@ -1,10 +1,54 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "app": {
+      "root": ".",
+      "framework": "vite",
+      "rewrites": [
+        {
+          "source": "/(.*)",
+          "destination": "/index.html"
+        }
+      ],
+      "bindings": [
+        {
+          "type": "service",
+          "service": "trustpool-backend",
+          "format": "url",
+          "env": "BACKEND_INTERNAL_URL"
+        }
+      ]
+    },
+    "trustpool-backend": {
+      "root": "backend",
+      "entrypoint": "main.py",
+      "buildCommand": "pip install -r requirements.txt && alembic upgrade head"
+    }
+  },
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "trustpool-backend"
+      }
+    },
+    {
+      "source": "/docs",
+      "destination": {
+        "service": "trustpool-backend"
+      }
+    },
+    {
+      "source": "/openapi.json",
+      "destination": {
+        "service": "trustpool-backend"
+      }
+    },
+    {
       "source": "/(.*)",
-      "destination": "/index.html"
+      "destination": {
+        "service": "app"
+      }
     }
   ]
 }
-
