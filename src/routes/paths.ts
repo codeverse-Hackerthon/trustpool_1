@@ -1,0 +1,40 @@
+export const ROUTES = {
+  PUBLIC: {
+    LANDING: '/',
+    LOGIN: '/login',
+    REGISTER: '/register',
+  },
+  STUDENT: {
+    ROOT: '/student',
+    DASHBOARD: '/student/dashboard',
+    RESOURCES: '/student/resources',
+    RESOURCE_DETAILS: (id: string = ':id') => `/student/resources/${id}`,
+    BOOKINGS: '/student/bookings',
+    ALLOCATION: '/student/allocation',
+    QR_ACCESS: '/student/qr-access',
+    CONDITION_REPORTS: '/student/condition-reports',
+    HISTORY: '/student/history',
+  },
+  OWNER: {
+    ROOT: '/owner',
+    DASHBOARD: '/owner/dashboard',
+    RESOURCES: '/owner/resources',
+    REQUESTS: '/owner/requests',
+    ACTIVE_BOOKINGS: '/owner/active-bookings',
+    RETURNS: '/owner/returns',
+    INCIDENTS: '/owner/incidents',
+    ANALYTICS: '/owner/analytics',
+  },
+  ADMIN: {
+    ROOT: '/admin',
+    DASHBOARD: '/admin/dashboard',
+    USERS: '/admin/users',
+    VERIFICATION: '/admin/verification',
+    RESOURCE_MONITORING: '/admin/resources',
+    BOOKING_MONITORING: '/admin/bookings',
+    INCIDENTS: '/admin/incidents',
+    AUDIT_LOGS: '/admin/audit-logs',
+    ANALYTICS: '/admin/analytics',
+  },
+} as const;
+
